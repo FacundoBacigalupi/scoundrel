@@ -54,8 +54,9 @@ class Game:
                 result = "potion_used"
             else:
                 result = "potion_not_effective"
-        elif card.type() == 'weapon':
+        elif card.type() == "weapon":
             self.player.equip_weapon(card)
+            result = "weapon_equipped"
         # After using the card, it is removed from the room
         self.room.pop(index)
         # The room is filled with new cards if we have one card left
