@@ -23,31 +23,37 @@ class Game:
             if card:
                 self.room.append(card)
 
-    def choose_card(self, index):
+    def get_card(self, index):
+        if index < 0 or index >= len(self.room):
+            return None
+
+        return self.room[index]
+
+    def choose_card(self, index, fight_mode=None):
         # The player chooses a card from the room
         if index < 0 or index >= len(self.room):
             return "Invalid index"
         card = self.room[index]
-        if card.type() == 'monster':
-            # The player chooses whether to fight bare-handed or with a weapon if they have one
-            print(f"Choose how to fight the monster {card}.")
-            print("Write 'weapon' to use your weapon or 'barehanded' to fight bare-handed.")
-            finish = False
-            while not finish:
-                action = input("> ")
-                if action == "weapon" and self.player.weapon:
-                    self.player.fight_with_weapon(card)
-                    finish = True
-                elif action == "barehanded":
-                    self.player.fight_barehanded(card)
-                    finish = True
-                elif action == "weapon" and not self.player.weapon:
-                    print("You don't have a weapon equipped.")
-                else:
-                    print("Invalid action. Please write 'weapon' or 'barehanded'.")
-        elif card.type() == 'potion' and self.can_heal:
-            self.player.drink_potion(card)
-            self.can_heal = False  # You can't heal again in the same room
+        result = "card_used"
+        if card.type() == "monster":
+            if fight_mode == "weapon":
+                success = self.player.fight_with_weapon(card)
+
+                if not success:
+                    return "weapon_not_allowed"
+
+            elif fight_mode == "barehanded":
+                self.player.fight_barehanded(card)
+
+            else:
+                return "fight_mode_required"
+        elif card.type() == 'potion':
+            if self.can_heal:
+                self.player.drink_potion(card)
+                self.can_heal = False # You can't heal again in the same room
+                result = "potion_used"
+            else:
+                result = "potion_not_effective"
         elif card.type() == 'weapon':
             self.player.equip_weapon(card)
         # After using the card, it is removed from the room
@@ -60,6 +66,8 @@ class Game:
         # If a card has already been chosen, you can't escape
         else:
             self.can_run = False
+        
+        return result
 
     def run_away(self):
         if self.can_run:
@@ -68,9 +76,9 @@ class Game:
             self.room = []  # Empty the room
             self.can_run = False  # You can't run away again
             self.fill_room()  # Fill the room with new cards
-            print("You ran away. New cards have been loaded into the room.")
-        else:
-            print("You can't run away now.")
+            return "ran_away"
+        
+        return "cannot_run"
 
 
     def check_end_conditions(self):

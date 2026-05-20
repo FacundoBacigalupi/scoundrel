@@ -17,9 +17,10 @@ class Player:
     def fight_with_weapon(self, monster):
         if self.last_monster_killed_with_weapon is None or self.last_monster_killed_with_weapon > monster.value():
             self.health = max(self.health - max(monster.value() - self.weapon.value(), 0), 0)
-            self.last_monster_killed_with_weapon = monster.value()  # Record the monster killed with the weapon
-        else:
-            print("You can't use the weapon against this monster because it's as strong as, or stronger than, the last one you killed with it.")
+            self.last_monster_killed_with_weapon = monster.value()
+            return True
 
+        return False
+    
     def is_dead(self):
         return self.health <= 0
